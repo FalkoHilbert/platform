@@ -45,7 +45,7 @@ Component.register('sw-media-modal-v2', {
             type: String,
             required: false,
             default: 'image/*'
-        },
+        }
     },
 
     data() {

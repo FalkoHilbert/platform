@@ -18,7 +18,7 @@ Component.register('sw-media-index', {
             type: String,
             required: false,
             default: '*/*'
-        },
+        }
     },
 
     data() {

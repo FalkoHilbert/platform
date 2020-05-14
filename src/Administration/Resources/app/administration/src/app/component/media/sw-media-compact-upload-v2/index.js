@@ -37,7 +37,7 @@ Shopware.Component.extend('sw-media-compact-upload-v2', 'sw-media-upload-v2', {
             type: String,
             required: false,
             default: 'image/*'
-        },
+        }
     },
 
     methods: {
