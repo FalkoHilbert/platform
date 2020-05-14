@@ -89,7 +89,13 @@ Component.register('sw-media-upload-v2', {
             type: Object,
             required: false,
             default: null
-        }
+        },
+
+        fileAccept: {
+            type: String,
+            required: false,
+            default: 'image/*'
+        },
     },
 
     data() {
