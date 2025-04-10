@@ -194,8 +194,8 @@ class Router implements RouterInterface, RequestMatcherInterface, WarmableInterf
 
     private function isStorefrontRoute(string $name): bool
     {
-        return str_starts_with($name, 'frontend.')
-            || str_starts_with($name, 'widgets.')
-            || str_starts_with($name, 'payment.');
+        $route = $this->getRouteCollection()->get($name);
+
+        return \in_array(StorefrontRouteScope::ID, $route?->getDefault(PlatformRequest::ATTRIBUTE_ROUTE_SCOPE) ?? [], true);
     }
 }
