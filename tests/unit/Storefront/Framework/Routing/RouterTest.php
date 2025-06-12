@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Routing\ApiRouteScope;
+use Shopware\Core\Framework\Test\TestCaseHelper\ReflectionHelper;
 use Shopware\Core\PlatformRequest;
 use Shopware\Storefront\Framework\Routing\RequestTransformer;
 use Shopware\Storefront\Framework\Routing\Router;
@@ -78,7 +79,7 @@ class RouterTest extends TestCase
         $this->symfonyRouterMock
             ->expects($this->once())
             ->method('matchRequest')
-            ->with(static::callback(function (Request $localClone) {
+            ->with(static::callback(static function (Request $localClone) {
                 return $localClone->server->get('REQUEST_URI') === '/test-uri';
             }))
             ->willReturn(['route' => 'test']);
@@ -119,8 +120,7 @@ class RouterTest extends TestCase
 
     public function testRemovePrefix(): void
     {
-        $method = new \ReflectionMethod($this->router, 'removePrefix');
-        $method->setAccessible(true);
+        $method = ReflectionHelper::getMethod(Router::class, 'removePrefix');
 
         static::assertSame('/test', $method->invoke($this->router, '/base/test', '/base'));
         static::assertSame('/base/test', $method->invoke($this->router, '/base/test', '/wrong-prefix'));
@@ -181,7 +181,7 @@ class RouterTest extends TestCase
         $this->requestStackMock
             ->expects($this->exactly(2)) // only when the route is a storefront route it is called twice
             ->method('getMainRequest')
-            ->willReturn(new Request([], [], [], [], [], ['SCRIPT_NAME' => '/base-path']));
+            ->willReturn(new Request(server: ['SCRIPT_NAME' => '/base-path']));
 
         $result = $this->router->generate('storefront_route');
 
@@ -212,7 +212,7 @@ class RouterTest extends TestCase
             ->expects($this->once())  // only when the route is not a storefront route it is called once
             ->method('getMainRequest');
 
-        $result = $this->router->generate('non_storefront_route', []);
+        $result = $this->router->generate('non_storefront_route');
 
         static::assertSame('/non-storefront-route', $result);
     }
@@ -250,7 +250,7 @@ class RouterTest extends TestCase
         $this->requestStackMock
             ->expects($this->exactly(2))
             ->method('getMainRequest')
-            ->willReturn(new Request([], [], [], [], [], [
+            ->willReturn(new Request(server: [
                 'SCRIPT_NAME' => '/base-path',
                 'HTTPS' => 'on',
                 'HTTP_HOST' => 'example.com',
@@ -295,7 +295,7 @@ class RouterTest extends TestCase
         $this->requestStackMock
             ->expects($this->exactly(2))
             ->method('getMainRequest')
-            ->willReturn(new Request([], [], [], [], [], [
+            ->willReturn(new Request(server: [
                 'SCRIPT_NAME' => '/base-path',
                 'HTTPS' => 'off',
                 'HTTP_HOST' => 'example.com',
@@ -341,7 +341,7 @@ class RouterTest extends TestCase
         $this->requestStackMock
             ->expects($this->exactly(2))
             ->method('getMainRequest')
-            ->willReturn(new Request([], [], [], [], [], [
+            ->willReturn(new Request(server: [
                 'SCRIPT_NAME' => '/base-path',
                 'HTTPS' => 'off',
                 'HTTP_HOST' => 'example.com',
@@ -387,7 +387,7 @@ class RouterTest extends TestCase
         $this->requestStackMock
             ->expects($this->exactly(2))
             ->method('getMainRequest')
-            ->willReturn(new Request([], [], [], [], [], [
+            ->willReturn(new Request(server: [
                 'SCRIPT_NAME' => '/base-path',
                 'HTTPS' => 'on',
                 'HTTP_HOST' => 'example.com',
@@ -432,7 +432,7 @@ class RouterTest extends TestCase
         $this->requestStackMock
             ->expects($this->exactly(2))
             ->method('getMainRequest')
-            ->willReturn(new Request([], [], [], [], [], [
+            ->willReturn(new Request(server: [
                 'SCRIPT_NAME' => '/base-path',
                 'HTTP_HOST' => 'example.com',
                 'SERVER_PORT' => 80,
@@ -470,7 +470,7 @@ class RouterTest extends TestCase
         $this->requestStackMock
             ->expects($this->exactly(2))
             ->method('getMainRequest')
-            ->willReturn(new Request([], [], [], [], [], ['SCRIPT_NAME' => '/base-path']));
+            ->willReturn(new Request(server: ['SCRIPT_NAME' => '/base-path']));
 
         $result = $this->router->generate('test_route', [], Router::RELATIVE_PATH);
 
@@ -488,9 +488,9 @@ class RouterTest extends TestCase
         $this->requestStackMock
             ->expects($this->once())
             ->method('getMainRequest')
-            ->willReturn(new Request([], [], [], [], [], ['SCRIPT_NAME' => '/base-path']));
+            ->willReturn(new Request(server: ['SCRIPT_NAME' => '/base-path']));
 
-        $result = $this->router->generate('test_route', [], Router::ABSOLUTE_PATH);
+        $result = $this->router->generate('test_route');
 
         static::assertSame('/base-path/test-route', $result);
     }
@@ -505,10 +505,7 @@ class RouterTest extends TestCase
             ->method('getMainRequest')
             ->willReturn($request);
 
-        $method = new \ReflectionMethod($this->router, 'getSalesChannelBaseUrl');
-        $method->setAccessible(true);
-
-        $result = $method->invoke($this->router);
+        $result = ReflectionHelper::getMethod(Router::class, 'getSalesChannelBaseUrl')->invoke($this->router);
 
         static::assertSame('/de/', $result);
     }
